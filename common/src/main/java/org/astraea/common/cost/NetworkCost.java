@@ -21,7 +21,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -153,11 +152,15 @@ public abstract class NetworkCost implements HasClusterCost, HasPartitionCost {
   @Override
   public PartitionCost partitionCost(ClusterInfo clusterInfo, ClusterBean clusterBean) {
     noMetricCheck(clusterBean);
-
-    var ingressRate = estimateRate(clusterInfo, clusterBean, ServerMetrics.Topic.BYTES_IN_PER_SEC);
-
-    return null;
+    if (bandwidthType == BandwidthType.Egress)
+      throw new IllegalArgumentException("assignor doesn't use egress as load");
+    return () ->
+        estimateRate(clusterInfo, clusterBean, ServerMetrics.Topic.BYTES_IN_PER_SEC)
+            .entrySet()
+            .stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> Double.valueOf(e.getValue())));
   }
+
   @Override
   public Optional<Fetcher> fetcher() {
     // TODO: We need a reliable way to access the actual current cluster info. To do that we need to

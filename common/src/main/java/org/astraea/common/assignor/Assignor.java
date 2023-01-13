@@ -33,7 +33,7 @@ import org.astraea.common.Utils;
 import org.astraea.common.admin.NodeInfo;
 import org.astraea.common.admin.TopicPartition;
 import org.astraea.common.cost.HasPartitionCost;
-import org.astraea.common.cost.ReplicaSizeCost;
+import org.astraea.common.cost.NetworkIngressCost;
 import org.astraea.common.metrics.collector.MetricCollector;
 import org.astraea.common.partitioner.PartitionerUtils;
 
@@ -45,7 +45,7 @@ public abstract class Assignor implements ConsumerPartitionAssignor, Configurabl
   // TODO: metric collector may be configured by user in the future.
   // TODO: need to track the performance when using the assignor in large scale consumers, see
   // https://github.com/skiptests/astraea/pull/1162#discussion_r1036285677
-  private final MetricCollector metricCollector =
+  protected final MetricCollector metricCollector =
       MetricCollector.builder()
           .interval(Duration.ofSeconds(1))
           .expiration(Duration.ofSeconds(15))
@@ -173,10 +173,16 @@ public abstract class Assignor implements ConsumerPartitionAssignor, Configurabl
     var defaultJMXPort = config.integer(JMX_PORT);
     this.costFunction =
         costFunctions.isEmpty()
-            ? HasPartitionCost.of(Map.of(new ReplicaSizeCost(), 1D))
+            ? HasPartitionCost.of(Map.of(new NetworkIngressCost(), 1D))
             : HasPartitionCost.of(costFunctions);
     this.jmxPortGetter = id -> Optional.ofNullable(customJMXPort.get(id)).or(() -> defaultJMXPort);
     this.costFunction.fetcher().ifPresent(metricCollector::addFetcher);
+    this.metricCollector.registerJmx(
+        1001, InetSocketAddress.createUnresolved("192.168.103.171", 8000));
+    this.metricCollector.registerJmx(
+        1002, InetSocketAddress.createUnresolved("192.168.103.172", 8000));
+    this.metricCollector.registerJmx(
+        1003, InetSocketAddress.createUnresolved("192.168.103.173", 8000));
     configure(config);
   }
 }

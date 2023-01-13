@@ -63,6 +63,6 @@ public interface HasPartitionCost extends CostFunction {
       }
     };
   }
-
+  // TODO: need filter the set of topics that consumers non-subscribed
   PartitionCost partitionCost(ClusterInfo clusterInfo, ClusterBean clusterBean);
 }
