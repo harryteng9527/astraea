@@ -21,6 +21,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -56,7 +57,7 @@ import org.astraea.common.metrics.collector.Fetcher;
  *       replica, see <a href="https://cwiki.apache.org/confluence/x/go_zBQ">KIP-392<a>.
  * </ol>
  */
-public abstract class NetworkCost implements HasClusterCost {
+public abstract class NetworkCost implements HasClusterCost, HasPartitionCost {
 
   private final AtomicReference<ClusterInfo> currentCluster = new AtomicReference<>();
   private final BandwidthType bandwidthType;
@@ -149,6 +150,14 @@ public abstract class NetworkCost implements HasClusterCost {
     return () -> score;
   }
 
+  @Override
+  public PartitionCost partitionCost(ClusterInfo clusterInfo, ClusterBean clusterBean) {
+    noMetricCheck(clusterBean);
+
+    var ingressRate = estimateRate(clusterInfo, clusterBean, ServerMetrics.Topic.BYTES_IN_PER_SEC);
+
+    return null;
+  }
   @Override
   public Optional<Fetcher> fetcher() {
     // TODO: We need a reliable way to access the actual current cluster info. To do that we need to
