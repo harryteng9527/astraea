@@ -16,8 +16,6 @@
  */
 package org.astraea.common.assignor;
 
-import java.net.InetSocketAddress;
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -30,11 +28,9 @@ import org.apache.kafka.common.Cluster;
 import org.apache.kafka.common.Configurable;
 import org.astraea.common.Configuration;
 import org.astraea.common.Utils;
-import org.astraea.common.admin.NodeInfo;
 import org.astraea.common.admin.TopicPartition;
 import org.astraea.common.cost.HasPartitionCost;
 import org.astraea.common.cost.NetworkIngressCost;
-import org.astraea.common.metrics.collector.MetricCollector;
 import org.astraea.common.partitioner.PartitionerUtils;
 
 /** Abstract assignor implementation which does some common work (e.g., configuration). */
@@ -45,11 +41,6 @@ public abstract class Assignor implements ConsumerPartitionAssignor, Configurabl
   // TODO: metric collector may be configured by user in the future.
   // TODO: need to track the performance when using the assignor in large scale consumers, see
   // https://github.com/skiptests/astraea/pull/1162#discussion_r1036285677
-  protected final MetricCollector metricCollector =
-      MetricCollector.builder()
-          .interval(Duration.ofSeconds(1))
-          .expiration(Duration.ofSeconds(15))
-          .build();
 
   /**
    * Perform the group assignment given the member subscriptions and current cluster metadata.
@@ -72,35 +63,6 @@ public abstract class Assignor implements ConsumerPartitionAssignor, Configurabl
   protected void configure(Configuration config) {}
 
   // -----------------------[helper]-----------------------//
-
-  /**
-   * check the nodes which wasn't register yet.
-   *
-   * @param nodes List of node information
-   * @return Map from each broker id to broker host
-   */
-  protected Map<Integer, String> checkUnregister(List<NodeInfo> nodes) {
-    return nodes.stream()
-        .filter(i -> !metricCollector.listIdentities().contains(i.id()))
-        .collect(Collectors.toMap(NodeInfo::id, NodeInfo::host));
-  }
-
-  /**
-   * register the JMX for metric collector. only register the JMX that is not registered yet.
-   *
-   * @param unregister Map from each broker id to broker host
-   */
-  protected void registerJMX(Map<Integer, String> unregister) {
-    unregister.forEach(
-        (id, host) ->
-            metricCollector.registerJmx(
-                id, InetSocketAddress.createUnresolved(host, jmxPortGetter.apply(id).get())));
-  }
-
-  // used for test
-  protected void registerLocalJMX(Map<Integer, String> unregister) {
-    unregister.forEach((id, host) -> metricCollector.registerLocalJmx(id));
-  }
 
   /**
    * Parse cost function names and weight. you can specify multiple cost function with assignor. The
@@ -176,13 +138,6 @@ public abstract class Assignor implements ConsumerPartitionAssignor, Configurabl
             ? HasPartitionCost.of(Map.of(new NetworkIngressCost(), 1D))
             : HasPartitionCost.of(costFunctions);
     this.jmxPortGetter = id -> Optional.ofNullable(customJMXPort.get(id)).or(() -> defaultJMXPort);
-    this.costFunction.fetcher().ifPresent(metricCollector::addFetcher);
-    this.metricCollector.registerJmx(
-        1001, InetSocketAddress.createUnresolved("192.168.103.171", 8000));
-    this.metricCollector.registerJmx(
-        1002, InetSocketAddress.createUnresolved("192.168.103.172", 8000));
-    this.metricCollector.registerJmx(
-        1003, InetSocketAddress.createUnresolved("192.168.103.173", 8000));
     configure(config);
   }
 }

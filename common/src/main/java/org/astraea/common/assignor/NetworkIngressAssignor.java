@@ -16,6 +16,7 @@
  */
 package org.astraea.common.assignor;
 
+import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,7 +30,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.astraea.common.Utils;
 import org.astraea.common.admin.Admin;
+import org.astraea.common.admin.ClusterBean;
 import org.astraea.common.admin.TopicPartition;
+import org.astraea.common.metrics.collector.MetricCollector;
 
 public class NetworkIngressAssignor extends Assignor {
 
@@ -39,20 +42,29 @@ public class NetworkIngressAssignor extends Assignor {
       Set<TopicPartition> topicPartitions) {
     var assignments = new HashMap<String, List<TopicPartition>>();
     var topics = new HashSet<String>();
-    Map<TopicPartition, Double> partitionCost = new HashMap<>();
+    Map<TopicPartition, Double> partitionCost;
+    ClusterBean clusterBean;
     var consumers = new HashSet<>(subscriptions.keySet());
     for (var subscription : subscriptions.entrySet()) {
       assignments.put(subscription.getKey(), new ArrayList<>());
       topics.addAll(subscription.getValue().topics());
     }
+    try (var metricCollector = MetricCollector.builder().build()) {
+      metricCollector.registerJmx(
+          1001, InetSocketAddress.createUnresolved("192.168.103.171", 8000));
+      metricCollector.registerJmx(
+          1002, InetSocketAddress.createUnresolved("192.168.103.172", 8000));
+      metricCollector.registerJmx(
+          1003, InetSocketAddress.createUnresolved("192.168.103.173", 8000));
+      costFunction.fetcher().ifPresent(metricCollector::addFetcher);
+      Utils.sleep(Duration.ofSeconds(2));
+      clusterBean = metricCollector.clusterBean();
+    }
 
-    Utils.sleep(Duration.ofSeconds(2));
     try (var admin = Admin.of("192.168.103.171:9092,192.168.103.172:9092,192.168.103.173:9092")) {
       partitionCost =
           costFunction
-              .partitionCost(
-                  admin.clusterInfo(topics).toCompletableFuture().join(),
-                  metricCollector.clusterBean())
+              .partitionCost(admin.clusterInfo(topics).toCompletableFuture().join(), clusterBean)
               .value();
     }
     if (partitionCost.values().stream().allMatch(d -> d == 0))
