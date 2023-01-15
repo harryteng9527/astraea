@@ -29,8 +29,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.astraea.common.Utils;
-import org.astraea.common.admin.Admin;
 import org.astraea.common.admin.ClusterBean;
+import org.astraea.common.admin.ClusterInfo;
 import org.astraea.common.admin.TopicPartition;
 import org.astraea.common.metrics.collector.MetricCollector;
 
@@ -39,10 +39,9 @@ public class NetworkIngressAssignor extends Assignor {
   @Override
   protected Map<String, List<TopicPartition>> assign(
       Map<String, org.astraea.common.assignor.Subscription> subscriptions,
-      Set<TopicPartition> topicPartitions) {
+      ClusterInfo clusterInfo) {
     var assignments = new HashMap<String, List<TopicPartition>>();
     var topics = new HashSet<String>();
-    Map<TopicPartition, Double> partitionCost;
     ClusterBean clusterBean;
     var consumers = new HashSet<>(subscriptions.keySet());
     for (var subscription : subscriptions.entrySet()) {
@@ -61,12 +60,7 @@ public class NetworkIngressAssignor extends Assignor {
       clusterBean = metricCollector.clusterBean();
     }
 
-    try (var admin = Admin.of("192.168.103.171:9092,192.168.103.172:9092,192.168.103.173:9092")) {
-      partitionCost =
-          costFunction
-              .partitionCost(admin.clusterInfo(topics).toCompletableFuture().join(), clusterBean)
-              .value();
-    }
+    var partitionCost = costFunction.partitionCost(clusterInfo, clusterBean).value();
 
     return assignByCost(partitionCost, consumers);
   }
