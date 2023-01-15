@@ -67,8 +67,7 @@ public class NetworkIngressAssignor extends Assignor {
               .partitionCost(admin.clusterInfo(topics).toCompletableFuture().join(), clusterBean)
               .value();
     }
-    if (partitionCost.values().stream().allMatch(d -> d == 0))
-      return roundrobinAssign(topicPartitions, consumers);
+
     return assignByCost(partitionCost, consumers);
   }
 
