@@ -61,7 +61,7 @@ public class NetworkIngressAssignor extends Assignor {
     }
 
     var partitionCost = costFunction.partitionCost(clusterInfo, clusterBean).value();
-
+    partitionCost.forEach((tp, cost) -> System.out.println("tp #" + tp + ", its cost =" + cost));
     return assignByCost(partitionCost, consumers);
   }
 
