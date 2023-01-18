@@ -50,11 +50,11 @@ public class NetworkIngressAssignor extends Assignor {
     }
     try (var metricCollector = MetricCollector.builder().build()) {
       metricCollector.registerJmx(
-          1001, InetSocketAddress.createUnresolved("192.168.103.185", 8000));
+          1001, InetSocketAddress.createUnresolved("192.168.103.171", 8000));
       metricCollector.registerJmx(
-          1002, InetSocketAddress.createUnresolved("192.168.103.186", 8000));
+          1002, InetSocketAddress.createUnresolved("192.168.103.172", 8000));
       metricCollector.registerJmx(
-          1003, InetSocketAddress.createUnresolved("192.168.103.187", 8000));
+          1003, InetSocketAddress.createUnresolved("192.168.103.173", 8000));
       costFunction.fetcher().ifPresent(metricCollector::addFetcher);
       Utils.sleep(Duration.ofSeconds(2));
       clusterBean = metricCollector.clusterBean();
