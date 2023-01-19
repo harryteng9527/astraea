@@ -215,6 +215,7 @@ public class MetricCollectorImpl implements MetricCollector {
     this.executorService.shutdownNow();
     Utils.packException(() -> this.executorService.awaitTermination(20, TimeUnit.SECONDS));
     this.mBeanClients.forEach((ignore, client) -> client.close());
+    System.out.println("metric collector close~");
   }
 
   public static class Builder {
