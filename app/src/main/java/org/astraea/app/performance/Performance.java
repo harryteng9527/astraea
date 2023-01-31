@@ -158,24 +158,45 @@ public class Performance {
   }
 
   static List<ConsumerThread> consumers(Argument param, Map<TopicPartition, Long> latestOffsets) {
-    return ConsumerThread.create(
-        param.consumers,
-        (clientId, listener) ->
-            (param.pattern == null
-                    ? Consumer.forTopics(Set.copyOf(param.topics))
-                    : Consumer.forTopics(param.pattern))
-                .configs(param.configs())
-                .config(
-                    ConsumerConfigs.ISOLATION_LEVEL_CONFIG,
-                    param.transactionSize > 1
-                        ? ConsumerConfigs.ISOLATION_LEVEL_COMMITTED
-                        : ConsumerConfigs.ISOLATION_LEVEL_UNCOMMITTED)
-                .bootstrapServers(param.bootstrapServers())
-                .config(ConsumerConfigs.GROUP_ID_CONFIG, param.groupId)
-                .seek(latestOffsets)
-                .consumerRebalanceListener(listener)
-                .config(ConsumerConfigs.CLIENT_ID_CONFIG, clientId)
-                .build());
+    return param.offset == "earliest"
+        ? ConsumerThread.create(
+            param.consumers,
+            (clientId, listener) ->
+                (param.pattern == null
+                        ? Consumer.forTopics(Set.copyOf(param.topics))
+                        : Consumer.forTopics(param.pattern))
+                    .configs(param.configs())
+                    .config(
+                        ConsumerConfigs.ISOLATION_LEVEL_CONFIG,
+                        param.transactionSize > 1
+                            ? ConsumerConfigs.ISOLATION_LEVEL_COMMITTED
+                            : ConsumerConfigs.ISOLATION_LEVEL_UNCOMMITTED)
+                    .bootstrapServers(param.bootstrapServers())
+                    .config(ConsumerConfigs.GROUP_ID_CONFIG, param.groupId)
+                    .consumerRebalanceListener(listener)
+                    .config(ConsumerConfigs.CLIENT_ID_CONFIG, clientId)
+                    .config(
+                        ConsumerConfigs.AUTO_OFFSET_RESET_CONFIG,
+                        ConsumerConfigs.AUTO_OFFSET_RESET_EARLIEST)
+                    .build())
+        : ConsumerThread.create(
+            param.consumers,
+            (clientId, listener) ->
+                (param.pattern == null
+                        ? Consumer.forTopics(Set.copyOf(param.topics))
+                        : Consumer.forTopics(param.pattern))
+                    .configs(param.configs())
+                    .config(
+                        ConsumerConfigs.ISOLATION_LEVEL_CONFIG,
+                        param.transactionSize > 1
+                            ? ConsumerConfigs.ISOLATION_LEVEL_COMMITTED
+                            : ConsumerConfigs.ISOLATION_LEVEL_UNCOMMITTED)
+                    .bootstrapServers(param.bootstrapServers())
+                    .config(ConsumerConfigs.GROUP_ID_CONFIG, param.groupId)
+                    .seek(latestOffsets)
+                    .consumerRebalanceListener(listener)
+                    .config(ConsumerConfigs.CLIENT_ID_CONFIG, clientId)
+                    .build());
   }
 
   public static class Argument extends org.astraea.app.argument.Argument {
@@ -473,5 +494,8 @@ public class Performance {
         description = "Map<String, DataRate>: Set the topic-partitions and its' throttle data rate",
         converter = TopicPartitionDataRateMapField.class)
     Map<TopicPartition, DataRate> throttles = Map.of();
+
+    @Parameter(names = {"--offset"})
+    String offset = "earliest";
   }
 }
