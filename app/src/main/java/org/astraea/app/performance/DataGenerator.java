@@ -43,6 +43,21 @@ public interface DataGenerator extends AbstractThread {
       List<ArrayBlockingQueue<List<Record<byte[], byte[]>>>> queues,
       Supplier<TopicPartition> partitionSelector,
       Performance.Argument argument) {
+    if (argument.producers == 0) {
+      return new DataGenerator() {
+
+        @Override
+        public void waitForDone() {}
+
+        @Override
+        public boolean closed() {
+          return false;
+        }
+
+        @Override
+        public void close() {}
+      };
+    }
     var dataSupplier =
         supplier(
             argument.transactionSize,

@@ -74,9 +74,11 @@ public class Performance {
 
   public static List<String> execute(final Argument param) throws IOException {
     var blockingQueues =
-        IntStream.range(0, param.producers)
-            .mapToObj(i -> new ArrayBlockingQueue<List<Record<byte[], byte[]>>>(3000))
-            .collect(Collectors.toUnmodifiableList());
+        param.producers > 0
+            ? IntStream.range(0, param.producers)
+                .mapToObj(i -> new ArrayBlockingQueue<List<Record<byte[], byte[]>>>(3000))
+                .collect(Collectors.toUnmodifiableList())
+            : List.of(new ArrayBlockingQueue<List<Record<byte[], byte[]>>>(10));
     // always try to init topic even though it may be existent already.
     System.out.println("checking topics: " + String.join(",", param.topics));
     param.checkTopics();
