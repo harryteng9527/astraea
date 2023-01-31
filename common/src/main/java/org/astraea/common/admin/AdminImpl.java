@@ -1315,6 +1315,7 @@ class AdminImpl implements Admin {
   @Override
   public void close() {
     kafkaAdmin.close();
+    System.out.println("admin closed~");
   }
 
   private CompletionStage<
