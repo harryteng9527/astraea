@@ -213,8 +213,8 @@ public class Performance {
     @Parameter(
         names = {"--producers"},
         description = "Integer: number of producers to produce records",
-        validateWith = PositiveShortField.class,
-        converter = PositiveShortField.class)
+        validateWith = NonNegativeShortField.class,
+        converter = NonNegativeShortField.class)
     int producers = 1;
 
     @Parameter(
