@@ -47,7 +47,6 @@ import org.astraea.app.argument.PatternField;
 import org.astraea.app.argument.PositiveIntegerField;
 import org.astraea.app.argument.PositiveIntegerListField;
 import org.astraea.app.argument.PositiveLongField;
-import org.astraea.app.argument.PositiveShortField;
 import org.astraea.app.argument.StringListField;
 import org.astraea.app.argument.TopicPartitionDataRateMapField;
 import org.astraea.app.argument.TopicPartitionField;
