@@ -89,6 +89,7 @@ public interface ConsumerThread extends AbstractThread {
               var closed = new AtomicBoolean(false);
               var closeLatch = closeLatches.get(index);
               var subscribed = new AtomicBoolean(true);
+              System.out.println("client ID = " + clientId);
               executors.execute(
                   () -> {
                     try {
