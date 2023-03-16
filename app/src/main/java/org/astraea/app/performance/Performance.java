@@ -60,6 +60,7 @@ import org.astraea.common.admin.Replica;
 import org.astraea.common.admin.TopicPartition;
 import org.astraea.common.consumer.Consumer;
 import org.astraea.common.consumer.ConsumerConfigs;
+import org.astraea.common.consumer.Deserializer;
 import org.astraea.common.partitioner.Partitioner;
 import org.astraea.common.producer.Producer;
 import org.astraea.common.producer.ProducerConfigs;
@@ -183,10 +184,10 @@ public class Performance {
                 .config(ConsumerConfigs.AUTO_OFFSET_RESET_CONFIG, "earliest")
                 .config(
                     ConsumerConfigs.KEY_DESERIALIZER_CLASS_CONFIG,
-                    "org.apache.kafka.common.serialization.ByteArrayDeserializer")
+                    Deserializer.BYTE_ARRAY.toString())
                 .config(
                     ConsumerConfigs.VALUE_DESERIALIZER_CLASS_CONFIG,
-                    "org.apache.kafka.common.serialization.ByteArrayDeserializer")
+                    Deserializer.BYTE_ARRAY.toString())
                 .build());
   }
 
