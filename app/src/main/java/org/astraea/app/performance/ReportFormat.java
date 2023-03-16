@@ -218,6 +218,8 @@ public enum ReportFormat implements EnumInfo {
                               ConsumerThread.differenceBetweenRebalance(
                                   consumerReports.get(i).clientId()))));
             });
+    elements.add(
+        CSVContentElement.create("poll latency", () -> Long.toString(Performance.poll_time)));
     return elements;
   }
 

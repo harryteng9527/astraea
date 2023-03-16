@@ -60,7 +60,6 @@ import org.astraea.common.admin.Replica;
 import org.astraea.common.admin.TopicPartition;
 import org.astraea.common.consumer.Consumer;
 import org.astraea.common.consumer.ConsumerConfigs;
-import org.astraea.common.consumer.Deserializer;
 import org.astraea.common.partitioner.Partitioner;
 import org.astraea.common.producer.Producer;
 import org.astraea.common.producer.ProducerConfigs;
@@ -68,6 +67,7 @@ import org.astraea.common.producer.Record;
 
 /** see docs/performance_benchmark.md for man page */
 public class Performance {
+  public static long poll_time = 0;
   /** Used in Automation, to achieve the end of one Performance and then start another. */
   public static void main(String[] args) {
     execute(Performance.Argument.parse(new Argument(), args));
@@ -183,10 +183,10 @@ public class Performance {
                 .config(ConsumerConfigs.AUTO_OFFSET_RESET_CONFIG, "earliest")
                 .config(
                     ConsumerConfigs.KEY_DESERIALIZER_CLASS_CONFIG,
-                    Deserializer.BYTE_ARRAY.toString())
+                    "org.apache.kafka.common.serialization.ByteArrayDeserializer")
                 .config(
                     ConsumerConfigs.VALUE_DESERIALIZER_CLASS_CONFIG,
-                    Deserializer.BYTE_ARRAY.toString())
+                    "org.apache.kafka.common.serialization.ByteArrayDeserializer")
                 .build());
   }
 

@@ -99,7 +99,9 @@ public interface ConsumerThread extends AbstractThread {
                           Utils.sleep(Duration.ofSeconds(1));
                           continue;
                         }
+                        var start = System.currentTimeMillis();
                         consumer.poll(Duration.ofSeconds(1));
+                        Performance.poll_time = System.currentTimeMillis() - start;
                       }
                     } catch (WakeupException ignore) {
                       // Stop polling and being ready to clean up
