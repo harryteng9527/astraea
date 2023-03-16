@@ -19,8 +19,6 @@ package org.astraea.common.consumer;
 import static java.util.Objects.requireNonNull;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -180,6 +178,7 @@ public abstract class Builder<Key, Value> {
 
     @Override
     public List<Record<Key, Value>> poll(int recordCount, Duration timeout) {
+      /*
       var end = System.currentTimeMillis() + timeout.toMillis();
       var records = new ArrayList<Record<Key, Value>>();
       while (records.size() < recordCount) {
@@ -188,6 +187,9 @@ public abstract class Builder<Key, Value> {
         kafkaConsumer.poll(Duration.ofMillis(remaining)).forEach(r -> records.add(Record.of(r)));
       }
       return Collections.unmodifiableList(records);
+       */
+      kafkaConsumer.poll(Duration.ofSeconds(1));
+      return List.of();
     }
 
     @Override

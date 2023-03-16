@@ -61,6 +61,7 @@ import org.astraea.common.admin.Replica;
 import org.astraea.common.admin.TopicPartition;
 import org.astraea.common.consumer.Consumer;
 import org.astraea.common.consumer.ConsumerConfigs;
+import org.astraea.common.consumer.Deserializer;
 import org.astraea.common.partitioner.Partitioner;
 import org.astraea.common.producer.Producer;
 import org.astraea.common.producer.ProducerConfigs;
@@ -155,6 +156,7 @@ public class Performance {
   }
 
   static List<ConsumerThread> consumers(Argument param, Map<TopicPartition, Long> latestOffsets) {
+    /*
     return ConsumerThread.create(
         param.consumers,
         (clientId, listener) ->
@@ -172,6 +174,20 @@ public class Performance {
                 .seek(latestOffsets)
                 .consumerRebalanceListener(listener)
                 .config(ConsumerConfigs.CLIENT_ID_CONFIG, clientId)
+                .build());*/
+    return ConsumerThread.create(
+        param.consumers,
+        (clientId, listener) ->
+            Consumer.forPartitions(Set.of(TopicPartition.of("test1", 0)))
+                .configs(param.configs())
+                .bootstrapServers(param.bootstrapServers())
+                .config(ConsumerConfigs.AUTO_OFFSET_RESET_CONFIG, "earliest")
+                .config(
+                    ConsumerConfigs.KEY_DESERIALIZER_CLASS_CONFIG,
+                    Deserializer.BYTE_ARRAY.toString())
+                .config(
+                    ConsumerConfigs.VALUE_DESERIALIZER_CLASS_CONFIG,
+                    Deserializer.BYTE_ARRAY.toString())
                 .build());
   }
 

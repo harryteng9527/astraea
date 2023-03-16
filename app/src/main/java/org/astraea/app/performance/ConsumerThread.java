@@ -32,8 +32,8 @@ import java.util.stream.IntStream;
 import org.apache.kafka.common.errors.WakeupException;
 import org.astraea.common.Utils;
 import org.astraea.common.admin.TopicPartition;
+import org.astraea.common.consumer.AssignedConsumer;
 import org.astraea.common.consumer.ConsumerRebalanceListener;
-import org.astraea.common.consumer.SubscribedConsumer;
 import org.astraea.common.metrics.Sensor;
 import org.astraea.common.metrics.stats.Avg;
 
@@ -63,7 +63,7 @@ public interface ConsumerThread extends AbstractThread {
 
   static List<ConsumerThread> create(
       int consumers,
-      BiFunction<String, ConsumerRebalanceListener, SubscribedConsumer<byte[], byte[]>>
+      BiFunction<String, ConsumerRebalanceListener, AssignedConsumer<byte[], byte[]>>
           consumerSupplier) {
     if (consumers == 0) return List.of();
     var closeLatches =

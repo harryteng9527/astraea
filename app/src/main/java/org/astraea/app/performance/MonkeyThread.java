@@ -18,14 +18,11 @@ package org.astraea.app.performance;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import org.astraea.common.Utils;
-import org.astraea.common.consumer.Consumer;
-import org.astraea.common.consumer.ConsumerConfigs;
 
 public class MonkeyThread implements AbstractThread {
 
@@ -47,7 +44,7 @@ public class MonkeyThread implements AbstractThread {
                 case "kill":
                   return killMonkey(consumerThreads, entry.getValue());
                 case "add":
-                  return addMonkey(consumerThreads, entry.getValue(), param);
+                  // return addMonkey(consumerThreads, entry.getValue(), param);
                 default:
                   return unsubscribeMonkey(consumerThreads, entry.getValue());
               }
@@ -71,43 +68,43 @@ public class MonkeyThread implements AbstractThread {
         });
     return new MonkeyThread(close);
   }
-
-  private static MonkeyThread addMonkey(
-      List<ConsumerThread> consumerThreads, Duration frequency, Performance.Argument param) {
-    var close = new AtomicBoolean(false);
-    CompletableFuture.runAsync(
-        () -> {
-          while (!close.get()) {
-            if (consumerThreads.size() < param.consumers) {
-              System.out.println("add a consumer");
-              var consumer =
-                  ConsumerThread.create(
-                          1,
-                          (clientId, listener) ->
-                              (param.pattern == null
-                                      ? Consumer.forTopics(Set.copyOf(param.topics))
-                                      : Consumer.forTopics(param.pattern))
-                                  .configs(param.configs())
-                                  .config(
-                                      ConsumerConfigs.ISOLATION_LEVEL_CONFIG,
-                                      param.transactionSize > 1
-                                          ? ConsumerConfigs.ISOLATION_LEVEL_COMMITTED
-                                          : ConsumerConfigs.ISOLATION_LEVEL_UNCOMMITTED)
-                                  .bootstrapServers(param.bootstrapServers())
-                                  .config(ConsumerConfigs.GROUP_ID_CONFIG, param.groupId)
-                                  .seek(param.lastOffsets())
-                                  .consumerRebalanceListener(listener)
-                                  .config(ConsumerConfigs.CLIENT_ID_CONFIG, clientId)
-                                  .build())
-                      .get(0);
-              consumerThreads.add(consumer);
-              Utils.sleep(frequency);
+  /*
+    private static MonkeyThread addMonkey(
+        List<ConsumerThread> consumerThreads, Duration frequency, Performance.Argument param) {
+      var close = new AtomicBoolean(false);
+      CompletableFuture.runAsync(
+          () -> {
+            while (!close.get()) {
+              if (consumerThreads.size() < param.consumers) {
+                System.out.println("add a consumer");
+                var consumer =
+                    ConsumerThread.create(
+                            1,
+                            (clientId, listener) ->
+                                (param.pattern == null
+                                        ? Consumer.forTopics(Set.copyOf(param.topics))
+                                        : Consumer.forTopics(param.pattern))
+                                    .configs(param.configs())
+                                    .config(
+                                        ConsumerConfigs.ISOLATION_LEVEL_CONFIG,
+                                        param.transactionSize > 1
+                                            ? ConsumerConfigs.ISOLATION_LEVEL_COMMITTED
+                                            : ConsumerConfigs.ISOLATION_LEVEL_UNCOMMITTED)
+                                    .bootstrapServers(param.bootstrapServers())
+                                    .config(ConsumerConfigs.GROUP_ID_CONFIG, param.groupId)
+                                    .seek(param.lastOffsets())
+                                    .consumerRebalanceListener(listener)
+                                    .config(ConsumerConfigs.CLIENT_ID_CONFIG, clientId)
+                                    .build())
+                        .get(0);
+                consumerThreads.add(consumer);
+                Utils.sleep(frequency);
+              }
             }
-          }
-        });
-    return new MonkeyThread(close);
-  }
-
+          });
+      return new MonkeyThread(close);
+    }
+  */
   private static MonkeyThread unsubscribeMonkey(
       List<ConsumerThread> consumerThreads, Duration frequency) {
     var close = new AtomicBoolean(false);
