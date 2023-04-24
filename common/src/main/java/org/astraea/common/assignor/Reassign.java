@@ -51,6 +51,7 @@ public interface Reassign {
                       Map.entry(
                           e.getKey(),
                           e.getValue().stream()
+                              .filter(incompatible::containsKey)
                               .flatMap(tp -> incompatible.get(tp).stream())
                               .collect(Collectors.toUnmodifiableSet())))
               .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
