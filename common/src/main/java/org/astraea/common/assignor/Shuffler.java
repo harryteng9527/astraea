@@ -161,11 +161,22 @@ public interface Shuffler {
       //          w.entrySet().stream().min(Map.Entry.comparingByKey()).get().getValue().stream()
       //              .min(Comparator.comparingDouble(sigma::apply))
       //              .get();
-      var resu =
+      var assignmentWithSigma =
           possibleAssignments.stream()
-              .filter(e -> sigma.apply(e) < 0.5)
-              .min(Comparator.comparingLong(incompatibility::apply))
-              .get();
+              .map(e -> Map.entry(e, sigma.apply(e)))
+              .sorted(Map.Entry.comparingByValue())
+              .map(Map.Entry::getKey)
+              .limit(possibleAssignments.size() / 20)
+              .collect(Collectors.toList());
+
+      var resu =
+          assignmentWithSigma.stream().min(Comparator.comparingLong(incompatibility::apply)).get();
+
+      //      var resu =
+      //          possibleAssignments.stream()
+      //              .filter(e -> sigma.apply(e) < 0.5)
+      //              .min(Comparator.comparingLong(incompatibility::apply))
+      //              .get();
       System.out.println("assignment = ");
       resu.forEach((c, as) -> System.out.println("consumer = " + c + ", its assignment = " + as));
       return resu;
