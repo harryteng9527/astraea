@@ -59,8 +59,6 @@ public interface Shuffler {
                               .flatMap(tp -> incompatible.get(tp).stream())
                               .collect(Collectors.toUnmodifiableSet())))
               .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
-      System.out.println("unsuitable = " + unsuitable);
-      System.out.println("assignment = " + assignment);
       if (assignment.entrySet().stream()
           .noneMatch(
               e -> e.getValue().stream().anyMatch(tp -> unsuitable.get(e.getKey()).contains(tp)))) {
@@ -159,12 +157,11 @@ public interface Shuffler {
                   Collectors.groupingBy(
                       Map.Entry::getKey,
                       Collectors.mapping(Map.Entry::getValue, Collectors.toSet())));
-      System.out.println("w = " + w);
       var resu =
           w.entrySet().stream().min(Map.Entry.comparingByKey()).get().getValue().stream()
               .min(Comparator.comparingDouble(sigma::apply))
               .get();
-      System.out.println("resu = " + resu);
+
       return resu;
     };
   }
