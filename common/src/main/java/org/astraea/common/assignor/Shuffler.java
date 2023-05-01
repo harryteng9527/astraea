@@ -150,18 +150,24 @@ public interface Shuffler {
                     totalCost.values().stream().mapToDouble(c -> Math.pow(avg - c, 2)).sum()
                         / totalCost.size());
               };
-      var w =
-          possibleAssignments.stream()
-              .map(r -> Map.entry(incompatibility.apply(r), r))
-              .collect(
-                  Collectors.groupingBy(
-                      Map.Entry::getKey,
-                      Collectors.mapping(Map.Entry::getValue, Collectors.toSet())));
+      //      var w =
+      //          possibleAssignments.stream()
+      //              .map(r -> Map.entry(incompatibility.apply(r), r))
+      //              .collect(
+      //                  Collectors.groupingBy(
+      //                      Map.Entry::getKey,
+      //                      Collectors.mapping(Map.Entry::getValue, Collectors.toSet())));
+      //      var resu =
+      //          w.entrySet().stream().min(Map.Entry.comparingByKey()).get().getValue().stream()
+      //              .min(Comparator.comparingDouble(sigma::apply))
+      //              .get();
       var resu =
-          w.entrySet().stream().min(Map.Entry.comparingByKey()).get().getValue().stream()
-              .min(Comparator.comparingDouble(sigma::apply))
+          possibleAssignments.stream()
+              .filter(e -> sigma.apply(e) < 0.5)
+              .min(Comparator.comparingLong(incompatibility::apply))
               .get();
-
+      System.out.println("assignment = ");
+      resu.forEach((c, as) -> System.out.println("consumer = " + c + ", its assignment = " + as));
       return resu;
     };
   }
