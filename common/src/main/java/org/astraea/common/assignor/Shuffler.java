@@ -16,6 +16,7 @@
  */
 package org.astraea.common.assignor;
 
+import java.time.Duration;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -77,7 +78,7 @@ public interface Shuffler {
               };
 
       var start = System.currentTimeMillis();
-      while (System.currentTimeMillis() - start < 4000) {
+      while (System.currentTimeMillis() - start < 5000) {
         possibleAssignments.add(
             costs.keySet().stream()
                 .map(tp -> Map.entry(randomAssign.apply(tp), tp))
@@ -86,7 +87,9 @@ public interface Shuffler {
                         Map.Entry::getKey,
                         Collectors.mapping(Map.Entry::getValue, Collectors.toUnmodifiableList()))));
       }
-
+      System.out.println(
+          "we find solution for 5 sec. and the possible solution size = "
+              + possibleAssignments.size());
       var standardSigma =
           (Function<Map<String, List<TopicPartition>>, Double>)
               (r) -> {
@@ -127,14 +130,20 @@ public interface Shuffler {
                                     .count())
                     .sum();
               };
-
-      return possibleAssignments.stream()
-          .map(e -> Map.entry(e, standardSigma.apply(e)))
-          .sorted(Map.Entry.comparingByValue())
-          .map(Map.Entry::getKey)
-          .limit((int) Math.floor((double) possibleAssignments.size() / 10))
-          .min(Comparator.comparingLong(numberOfIncompatibility::apply))
-          .get();
+      var s = System.currentTimeMillis();
+      var r =
+          possibleAssignments.stream()
+              .map(e -> Map.entry(e, standardSigma.apply(e)))
+              .sorted(Map.Entry.comparingByValue())
+              .map(Map.Entry::getKey)
+              .limit((int) Math.floor((double) possibleAssignments.size() / 10))
+              .min(Comparator.comparingLong(numberOfIncompatibility::apply))
+              .get();
+      System.out.println(
+          "get sigma and find out the final assignment takes "
+              + Duration.ofMillis(System.currentTimeMillis() - s).toMillis()
+              + "ms");
+      return r;
     };
   }
 }
