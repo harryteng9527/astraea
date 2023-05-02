@@ -52,17 +52,14 @@ public class CostAwareAssignor extends Assignor {
             .map(SubscriptionInfo::topics)
             .flatMap(Collection::stream)
             .collect(Collectors.toUnmodifiableSet());
+    var s = System.currentTimeMillis();
     metricStore.wait(
-        (ignore) -> {
-          var bean = metricStore.clusterBean();
-          var c = costFunction.partitionCost(clusterInfo, bean);
-          if (c.value().values().stream().noneMatch(v -> Double.isNaN(v))) return true;
-          return false;
-        },
-        maxRetryTime);
-    // wait for clusterBean
-    //    retry(clusterInfo);
-
+        (clusterBean) ->
+            costFunction.partitionCost(clusterInfo, clusterBean).value().values().stream()
+                .noneMatch(v -> Double.isNaN(v)),
+        Duration.ofSeconds(30));
+    System.out.println(
+        "wait mbean total time = " + Duration.ofMillis(System.currentTimeMillis() - s) + "ms");
     var clusterBean = metricStore.clusterBean();
     var partitionCost = costFunction.partitionCost(clusterInfo, clusterBean);
     var cost =
@@ -91,7 +88,7 @@ public class CostAwareAssignor extends Assignor {
       Map<TopicPartition, Double> costs,
       Map<TopicPartition, Set<TopicPartition>> incompatible) {
     var assignment = Combinator.greedy().combine(subscriptions, costs);
-    return Shuffler.incompatible(4000).shuffle(subscriptions, assignment, incompatible, costs);
+    return Shuffler.incompatible().shuffle(subscriptions, assignment, incompatible, costs);
   }
 
   private void retry(ClusterInfo clusterInfo) {

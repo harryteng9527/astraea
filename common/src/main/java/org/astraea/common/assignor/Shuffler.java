@@ -43,7 +43,7 @@ public interface Shuffler {
       Map<TopicPartition, Set<TopicPartition>> incompatible,
       Map<TopicPartition, Double> costs);
 
-  static Shuffler incompatible(long maxTime) {
+  static Shuffler incompatible() {
     return (subscriptions, assignment, incompatible, costs) -> {
       if (incompatible.isEmpty()) return assignment;
       // get the incompatible partitions of each consumer from consumer assignment
@@ -54,6 +54,7 @@ public interface Shuffler {
                       Map.entry(
                           e.getKey(),
                           e.getValue().stream()
+                              .filter(incompatible::containsKey)
                               .flatMap(tp -> incompatible.get(tp).stream())
                               .collect(Collectors.toUnmodifiableSet())))
               .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -69,14 +70,14 @@ public interface Shuffler {
                 var subsConsumer =
                     subscriptions.entrySet().stream()
                         .filter(e -> e.getValue().topics().contains(tp.topic()))
-                        .collect(Collectors.toUnmodifiableList());
+                        .toList();
                 return subsConsumer
                     .get(ThreadLocalRandom.current().nextInt(subsConsumer.size()))
                     .getKey();
               };
 
       var start = System.currentTimeMillis();
-      while (System.currentTimeMillis() - start < maxTime) {
+      while (System.currentTimeMillis() - start < 4000) {
         possibleAssignments.add(
             costs.keySet().stream()
                 .map(tp -> Map.entry(randomAssign.apply(tp), tp))
@@ -103,7 +104,7 @@ public interface Shuffler {
                     totalCost.values().stream().mapToDouble(c -> Math.pow(avg - c, 2)).sum()
                         / totalCost.size());
               };
-      var numberOfIncompatiblility =
+      var numberOfIncompatibility =
           (Function<Map<String, List<TopicPartition>>, Integer>)
               (possibleAssignment) -> {
                 var unsuit =
@@ -121,10 +122,9 @@ public interface Shuffler {
                     .mapToInt(
                         e ->
                             (int)
-                                    e.getValue().stream()
-                                        .filter(tp -> unsuit.get(e.getKey()).contains(tp))
-                                        .count()
-                                / 2)
+                                e.getValue().stream()
+                                    .filter(tp -> unsuit.get(e.getKey()).contains(tp))
+                                    .count())
                     .sum();
               };
 
@@ -133,7 +133,7 @@ public interface Shuffler {
           .sorted(Map.Entry.comparingByValue())
           .map(Map.Entry::getKey)
           .limit((int) Math.floor((double) possibleAssignments.size() / 10))
-          .min(Comparator.comparingLong(numberOfIncompatiblility::apply))
+          .min(Comparator.comparingLong(numberOfIncompatibility::apply))
           .get();
     };
   }
