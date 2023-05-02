@@ -52,9 +52,16 @@ public class CostAwareAssignor extends Assignor {
             .map(SubscriptionInfo::topics)
             .flatMap(Collection::stream)
             .collect(Collectors.toUnmodifiableSet());
-
+    metricStore.wait(
+        (ignore) -> {
+          var bean = metricStore.clusterBean();
+          var c = costFunction.partitionCost(clusterInfo, bean);
+          if (c.value().values().stream().noneMatch(v -> Double.isNaN(v))) return true;
+          return false;
+        },
+        maxRetryTime);
     // wait for clusterBean
-    retry(clusterInfo);
+    //    retry(clusterInfo);
 
     var clusterBean = metricStore.clusterBean();
     var partitionCost = costFunction.partitionCost(clusterInfo, clusterBean);
