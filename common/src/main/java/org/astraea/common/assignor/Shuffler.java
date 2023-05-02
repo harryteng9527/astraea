@@ -44,7 +44,7 @@ public interface Shuffler {
       Map<TopicPartition, Set<TopicPartition>> incompatible,
       Map<TopicPartition, Double> costs);
 
-  static Shuffler incompatible() {
+  static Shuffler incompatible(Duration maxTime) {
     return (subscriptions, assignment, incompatible, costs) -> {
       if (incompatible.isEmpty()) return assignment;
       // get the incompatible partitions of each consumer from consumer assignment
@@ -78,7 +78,7 @@ public interface Shuffler {
               };
 
       var start = System.currentTimeMillis();
-      while (System.currentTimeMillis() - start < 5000) {
+      while (System.currentTimeMillis() - start < maxTime.toMillis()) {
         possibleAssignments.add(
             costs.keySet().stream()
                 .map(tp -> Map.entry(randomAssign.apply(tp), tp))
