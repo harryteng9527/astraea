@@ -49,6 +49,7 @@ public interface Combinator {
 
       var result =
           costs.entrySet().stream()
+              .sorted(Map.Entry.comparingByValue())
               .map(
                   e -> {
                     var consumer = lowestCostConsumer.apply(e.getKey());
