@@ -104,7 +104,7 @@ public interface Shuffler {
                         / totalCost.size());
               };
       var numberOfIncompatiblility =
-          (Function<Map<String, List<TopicPartition>>, Long>)
+          (Function<Map<String, List<TopicPartition>>, Integer>)
               (possibleAssignment) -> {
                 var unsuit =
                     possibleAssignment.entrySet().stream()
@@ -118,24 +118,23 @@ public interface Shuffler {
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
                 return possibleAssignment.entrySet().stream()
-                    .mapToLong(
+                    .mapToInt(
                         e ->
-                            e.getValue().stream()
-                                    .filter(tp -> unsuit.get(e.getKey()).contains(tp))
-                                    .count()
+                            (int)
+                                    e.getValue().stream()
+                                        .filter(tp -> unsuit.get(e.getKey()).contains(tp))
+                                        .count()
                                 / 2)
                     .sum();
               };
 
-      var r =
-          possibleAssignments.parallelStream()
-              .map(e -> Map.entry(e, standardSigma.apply(e)))
-              .sorted(Map.Entry.comparingByValue())
-              .map(Map.Entry::getKey)
-              .limit((long) Math.floor((double) possibleAssignments.size() / 10))
-              .min(Comparator.comparingLong(numberOfIncompatiblility::apply))
-              .get();
-      return r;
+      return possibleAssignments.stream()
+          .map(e -> Map.entry(e, standardSigma.apply(e)))
+          .sorted(Map.Entry.comparingByValue())
+          .map(Map.Entry::getKey)
+          .limit((int) Math.floor((double) possibleAssignments.size() / 10))
+          .min(Comparator.comparingLong(numberOfIncompatiblility::apply))
+          .get();
     };
   }
 }
