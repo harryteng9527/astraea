@@ -117,6 +117,7 @@ public interface Shuffler {
                                 Map.entry(
                                     e.getKey(),
                                     e.getValue().stream()
+                                        .filter(incompatible::containsKey)
                                         .flatMap(tp -> incompatible.get(tp).stream())
                                         .collect(Collectors.toUnmodifiableSet())))
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
