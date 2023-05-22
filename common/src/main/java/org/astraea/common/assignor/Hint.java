@@ -72,6 +72,7 @@ public interface Hint {
                       Map.entry(
                           e.getKey(),
                           e.getValue().stream()
+                              .filter(incompatibilities::containsKey)
                               .filter(p -> incompatibilities.get(p).contains(tp))
                               .count()))
               .collect(
