@@ -64,10 +64,15 @@ public class CostAwareAssignor extends Assignor {
         partitionCost.value().entrySet().stream()
             .filter(e -> subscribedTopics.contains(e.getKey().topic()))
             .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
+    System.out.println("cost = ");
+    System.out.println(cost);
     var incompatiblePartition = partitionCost.incompatibility();
+    System.out.println("incompatible = ");
+    System.out.println(incompatiblePartition);
     var shuffler = Shuffler.randomShuffler(subscriptions, cost, incompatiblePartition, config);
-
-    return shuffler.shuffle();
+    var result = shuffler.shuffle();
+    System.out.println("result = " + result);
+    return result;
   }
 
   @Override

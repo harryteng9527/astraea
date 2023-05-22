@@ -79,7 +79,7 @@ public interface Shuffler {
         }
         rejectedCombinators.add(combinator);
       }
-
+      System.out.println("number of rejected combinator = " + rejectedCombinators.size());
       return result == null
           ? rejectedCombinators.stream()
               .map(c -> Map.entry(c, standardDeviation.apply(c)))
