@@ -65,10 +65,9 @@ public class CostAwareAssignor extends Assignor {
             .filter(e -> subscribedTopics.contains(e.getKey().topic()))
             .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
     var incompatiblePartition = partitionCost.incompatibility();
+    var shuffler = Shuffler.randomShuffler(subscriptions, cost, incompatiblePartition, config);
 
-    var assignment = Combinator.greedy().combine(subscriptions, cost);
-    return Shuffler.incompatible(shuffleTime)
-        .shuffle(subscriptions, assignment, incompatiblePartition, cost);
+    return shuffler.shuffle();
   }
 
   @Override
