@@ -61,7 +61,7 @@ public interface Hint {
               .filter(e -> e.getValue().topics().contains(tp.topic()))
               .map(Map.Entry::getKey)
               .toList();
-      if (incompatibilities.get(tp).isEmpty()) return subscriber;
+      if (incompatibilities.isEmpty() || incompatibilities.get(tp).isEmpty()) return subscriber;
 
       var candidates =
           currentAssignment.entrySet().stream()
