@@ -84,7 +84,7 @@ public interface Limiter {
                   .map(tps -> tps.stream().mapToDouble(partitionCost::get).sum())
                   .collect(Collectors.toSet()));
 
-      return sd < limit;
+      return sd < 0.05;
     };
   }
 }
