@@ -146,12 +146,14 @@ public abstract class Assignor implements ConsumerPartitionAssignor, Configurabl
                   Collectors.toMap(
                       Map.Entry::getKey,
                       e -> new Assignment(e.getValue().stream().map(TopicPartition::to).toList())));
+      System.out.println("assignment in Assignor = " + assignment);
       result = new GroupAssignment(assignment);
     } catch (Exception e) {
       e.printStackTrace();
     } finally {
       releaseResource();
     }
+    System.out.println("resuuuult = " + result);
     return result;
   }
 
