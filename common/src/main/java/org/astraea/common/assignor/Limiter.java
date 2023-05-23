@@ -53,8 +53,7 @@ public interface Limiter {
             == 0;
   }
 
-  static Limiter skewCostLimiter(
-      Map<TopicPartition, Double> partitionCost) {
+  static Limiter skewCostLimiter(Map<TopicPartition, Double> partitionCost) {
     var standardDeviation =
         (Function<Collection<Double>, Double>)
             (vs) -> {

@@ -36,8 +36,7 @@ public interface Shuffler {
     var limiters =
         Limiter.of(
             Set.of(
-                Limiter.skewCostLimiter(partitionCost),
-                Limiter.incompatibleLimiter(incompatible)));
+                Limiter.skewCostLimiter(partitionCost), Limiter.incompatibleLimiter(incompatible)));
     var hints =
         Hint.of(
             Set.of(
