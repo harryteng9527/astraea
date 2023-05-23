@@ -36,7 +36,7 @@ public interface Shuffler {
     var limiters =
         Limiter.of(
             Set.of(
-                Limiter.skewCostLimiter(partitionCost, subscriptions),
+                Limiter.skewCostLimiter(partitionCost),
                 Limiter.incompatibleLimiter(incompatible)));
     var hints =
         Hint.of(
@@ -79,7 +79,6 @@ public interface Shuffler {
         }
         rejectedCombinators.add(combinator);
       }
-      System.out.println("number of rejected combinator = " + rejectedCombinators.size());
       return result == null
           ? rejectedCombinators.stream()
               .map(c -> Map.entry(c, standardDeviation.apply(c)))
