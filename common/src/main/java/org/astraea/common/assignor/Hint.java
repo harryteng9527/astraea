@@ -37,23 +37,16 @@ public interface Hint {
   static Hint lowCostHint(
       Map<String, SubscriptionInfo> subscriptions, Map<TopicPartition, Double> partitionCost) {
     return (currentAssignment, tp) -> {
-      var consumerPerCost =
+      var candidates =
           currentAssignment.entrySet().stream()
               .filter(e -> subscriptions.get(e.getKey()).topics().contains(tp.topic()))
               .map(
                   e ->
                       Map.entry(
                           e.getKey(), e.getValue().stream().mapToDouble(partitionCost::get).sum()))
-              .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-      List<String> candidates;
-
-      if (consumerPerCost.containsValue(0.0))
-        candidates =
-            consumerPerCost.entrySet().stream()
-                .filter(e -> e.getValue() == 0.0)
-                .map(Map.Entry::getKey)
-                .toList();
-      else candidates = consumerPerCost.entrySet().stream().map(Map.Entry::getKey).toList();
+              .sorted(Map.Entry.comparingByValue())
+              .map(Map.Entry::getKey)
+              .toList();
 
       return candidates.stream().limit((long) Math.ceil(candidates.size() / 2.0)).toList();
     };

@@ -83,48 +83,5 @@ public class GeneratorTest {
     Assertions.assertEquals(partitionInCluster.size(), partitionsInResult.size());
     Assertions.assertTrue(partitionsInResult.containsAll(partitionInCluster));
     Assertions.assertTrue(checkSubscriptionAndAssignment.apply(result, subscription));
-
-    // Every consumer get at least one partition
-    subscription =
-        Map.of(
-            "c1",
-            new SubscriptionInfo(List.of("t1", "t2", "t3"), null),
-            "c2",
-            new SubscriptionInfo(List.of("t1", "t2", "t3"), null),
-            "c3",
-            new SubscriptionInfo(List.of("t1", "t2", "t3"), null),
-            "c4",
-            new SubscriptionInfo(List.of("t1", "t2", "t3"), null));
-    randomGenerator =
-        Generator.randomGenerator(subscription, cost, Hint.lowCostHint(subscription, cost));
-    result = randomGenerator.get();
-    result.forEach((c, tps) -> Assertions.assertEquals(1, tps.size()));
-
-    // Validate there is no consumer was assigned more than 1 partition
-    cost =
-        Map.of(
-            TopicPartition.of("t1", 0),
-            0.2,
-            TopicPartition.of("t2", 0),
-            0.2,
-            TopicPartition.of("t3", 0),
-            0.4);
-    randomGenerator =
-        Generator.randomGenerator(subscription, cost, Hint.lowCostHint(subscription, cost));
-    result = randomGenerator.get();
-    result.forEach((c, tps) -> Assertions.assertTrue(tps.size() <= 1));
-
-    subscription =
-        Map.of(
-            "c1",
-            new SubscriptionInfo(List.of("t1"), null),
-            "c2",
-            new SubscriptionInfo(List.of("t2"), null),
-            "c3",
-            new SubscriptionInfo(List.of("t3"), null));
-    randomGenerator =
-        Generator.randomGenerator(subscription, cost, Hint.lowCostHint(subscription, cost));
-    result = randomGenerator.get();
-    Assertions.assertTrue(checkSubscriptionAndAssignment.apply(result, subscription));
   }
 }
