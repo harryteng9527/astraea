@@ -82,15 +82,16 @@ public class Performance {
     param.checkTopics();
 
     System.out.println("seeking offsets");
-    var latestOffsets = param.lastOffsets();
+    // var latestOffsets = param.lastOffsets();
+    var initOffsets = param.initOffsets();
 
     System.out.println("creating threads");
     var producerThreads =
         ProducerThread.create(blockingQueues, param::createProducer, param.interdependent);
     var consumerThreads =
         param.monkeys != null
-            ? Collections.synchronizedList(new ArrayList<>(consumers(param, latestOffsets)))
-            : consumers(param, latestOffsets);
+            ? Collections.synchronizedList(new ArrayList<>(consumers(param, initOffsets)))
+            : consumers(param, initOffsets);
 
     System.out.println("creating data generator");
     var dataGenerator = DataGenerator.of(blockingQueues, param.topicPartitionSelector(), param);
@@ -200,6 +201,13 @@ public class Performance {
       try (var admin = Admin.of(configs())) {
         return admin.partitions(Set.copyOf(topics)).toCompletableFuture().join().stream()
             .collect(Collectors.toMap(Partition::topicPartition, Partition::latestOffset));
+      }
+    }
+
+    Map<TopicPartition, Long> initOffsets() {
+      try (var admin = Admin.of(configs())) {
+        return admin.partitions(Set.copyOf(topics)).toCompletableFuture().join().stream()
+            .collect(Collectors.toMap(Partition::topicPartition, ignore -> (long) 0));
       }
     }
 
